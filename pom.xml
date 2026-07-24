@@ -4,20 +4,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.czertainly</groupId>
+        <groupId>com.otilm</groupId>
         <artifactId>dependencies</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>provisioning-rabbitmq</artifactId>
     <version>1.0.0</version>
 
     <properties>
-        <!-- Temporary override for CVE-2026-41293 and CVE-2026-43512.
-          Remove after the parent com.czertainly:dependencies upgrades to a Spring Boot release that ships Tomcat 10.1.55+
-          (expected with Spring Boot 3.5.15). Then delete this override. -->
-        <tomcat.version>10.1.55</tomcat.version>
-
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -164,4 +159,17 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>central-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
