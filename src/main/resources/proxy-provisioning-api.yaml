@@ -91,8 +91,10 @@ paths:
     post:
       summary: Provision a queue
       description: >
-        Creates a durable queue with a binding to the specified exchange.
-        Idempotent — re-declaring with identical arguments is a no-op.
+        Creates a durable queue and ensures that the requested binding exists.
+        Repeating an identical request is a no-op. Using the same queue with a
+        different exchange or routing key adds another binding; existing bindings
+        are not removed.
       operationId: provisionQueue
       tags:
         - Queue Provisioning
@@ -104,13 +106,18 @@ paths:
               $ref: '#/components/schemas/QueueRequest'
       responses:
         '201':
-          description: Queue created (or already exists with identical arguments)
+          description: Queue and requested binding declared successfully
         '400':
           description: Invalid request — missing required field
         '401':
           $ref: '#/components/responses/Unauthorized'
         '409':
-          description: Queue already exists with different arguments
+          description: Queue exists with a conflicting queue definition
+        '500':
+          description: >
+            RabbitMQ operation failed while declaring the queue or binding.
+            The queue may already exist without the requested binding; the same
+            request can be retried after the broker-side problem is resolved.
 
   /api/v1/queues/{name}:
     delete:

@@ -108,6 +108,21 @@ class QueueProvisioningServiceImplTest {
     }
 
     @Test
+    void provisionQueue_rethrowsBindingFailureWithoutDeletingQueue() {
+        var request = new QueueRequest()
+                .name("core-0")
+                .exchange("missing-exchange")
+                .routingKey("proxymessage.*.core-0");
+        var failure = new AmqpException("NOT_FOUND - no exchange 'missing-exchange'");
+        doThrow(failure).when(rabbitAdminSupport)
+                .declareBinding("core-0", "missing-exchange", "proxymessage.*.core-0");
+
+        assertThatThrownBy(() -> queueProvisioningService.provisionQueue(request))
+                .isSameAs(failure);
+        verify(rabbitAdminSupport, never()).deleteQueue(any());
+    }
+
+    @Test
     void deleteQueue_delegatesToRabbitAdminSupport() {
         queueProvisioningService.deleteQueue("core-0");
         verify(rabbitAdminSupport).deleteQueue("core-0");

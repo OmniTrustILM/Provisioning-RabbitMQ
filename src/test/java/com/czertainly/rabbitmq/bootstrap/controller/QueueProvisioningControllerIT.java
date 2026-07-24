@@ -2,6 +2,7 @@ package com.czertainly.rabbitmq.bootstrap.controller;
 
 import com.czertainly.rabbitmq.bootstrap.TestcontainersConfiguration;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,6 +29,9 @@ class QueueProvisioningControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Test
     void provisionQueue_returns201() throws Exception {
@@ -66,6 +71,20 @@ class QueueProvisioningControllerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void provisionQueue_addsBindingForDifferentRoutingKey() throws Exception {
+        String queueName = "it-q-additive-bindings";
+
+        provisionQueue(queueName, "it.route.one");
+        provisionQueue(queueName, "it.route.two");
+
+        rabbitTemplate.convertAndSend("czertainly-proxy", "it.route.one", "first");
+        rabbitTemplate.convertAndSend("czertainly-proxy", "it.route.two", "second");
+
+        assertThat(rabbitTemplate.receiveAndConvert(queueName, 5_000)).isEqualTo("first");
+        assertThat(rabbitTemplate.receiveAndConvert(queueName, 5_000)).isEqualTo("second");
     }
 
     @Test
@@ -187,5 +206,19 @@ class QueueProvisioningControllerIT {
                                 }
                                 """))
                 .andExpect(status().isUnauthorized());
+    }
+
+    private void provisionQueue(String queueName, String routingKey) throws Exception {
+        mockMvc.perform(post("/api/v1/queues")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "%s",
+                                  "exchange": "czertainly-proxy",
+                                  "routingKey": "%s"
+                                }
+                                """.formatted(queueName, routingKey)))
+                .andExpect(status().isCreated());
     }
 }
