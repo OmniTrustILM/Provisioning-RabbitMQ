@@ -61,8 +61,7 @@ class QueueProvisioningServiceImplTest {
 
         queueProvisioningService.provisionQueue(request);
 
-        // QueueRequest initialises properties to an empty HashMap, so {} is passed;
-        // RabbitAdminSupport treats null and empty map identically.
+        // The generated model defaults properties to an empty map.
         verify(rabbitAdminSupport).declareQueue("core-0", Map.of());
     }
 
@@ -108,7 +107,7 @@ class QueueProvisioningServiceImplTest {
     }
 
     @Test
-    void provisionQueue_rethrowsBindingFailureWithoutDeletingQueue() {
+    void provisionQueue_addsContextToBindingFailureWithoutDeletingQueue() {
         var request = new QueueRequest()
                 .name("core-0")
                 .exchange("missing-exchange")
@@ -118,7 +117,10 @@ class QueueProvisioningServiceImplTest {
                 .declareBinding("core-0", "missing-exchange", "proxymessage.*.core-0");
 
         assertThatThrownBy(() -> queueProvisioningService.provisionQueue(request))
-                .isSameAs(failure);
+                .isInstanceOf(AmqpException.class)
+                .hasMessage("Failed to bind queue 'core-0' to exchange 'missing-exchange' " +
+                        "with routing key 'proxymessage.*.core-0'; queue may exist without the requested binding")
+                .hasCause(failure);
         verify(rabbitAdminSupport, never()).deleteQueue(any());
     }
 

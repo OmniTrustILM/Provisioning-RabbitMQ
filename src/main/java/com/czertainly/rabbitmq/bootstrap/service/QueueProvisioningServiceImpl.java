@@ -34,10 +34,11 @@ public class QueueProvisioningServiceImpl implements QueueProvisioningService {
         try {
             rabbitAdminSupport.declareBinding(request.getName(), request.getExchange(), request.getRoutingKey());
         } catch (AmqpException e) {
-            log.warn("Queue '{}' was declared successfully, but binding to exchange '{}' with routing key '{}' failed. " +
-                            "The queue may now exist without the requested binding; manual cleanup may be required.",
-                    request.getName(), request.getExchange(), request.getRoutingKey(), e);
-            throw e;
+            throw new AmqpException(
+                    ("Failed to bind queue '%s' to exchange '%s' with routing key '%s'; " +
+                            "queue may exist without the requested binding")
+                            .formatted(request.getName(), request.getExchange(), request.getRoutingKey()),
+                    e);
         }
 
         log.info("Provisioned queue '{}' with binding to exchange '{}' (routing key: '{}')",
