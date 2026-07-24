@@ -87,6 +87,55 @@ paths:
         '404':
           description: Proxy not found
 
+  /api/v1/queues:
+    post:
+      summary: Provision a queue
+      description: >
+        Creates a durable queue and ensures that the requested binding exists.
+        Repeating an identical request is a no-op. Using the same queue with a
+        different exchange or routing key adds another binding; existing bindings
+        are not removed.
+      operationId: provisionQueue
+      tags:
+        - Queue Provisioning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueueRequest'
+      responses:
+        '201':
+          description: Queue and requested binding declared successfully
+        '400':
+          description: Invalid request — missing required field
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Queue exists with a conflicting queue definition
+        '500':
+          description: >
+            RabbitMQ operation failed while declaring the queue or binding.
+            The queue may already exist without the requested binding; the same
+            request can be retried after the broker-side problem is resolved.
+
+  /api/v1/queues/{name}:
+    delete:
+      summary: Delete a queue
+      description: >
+        Deletes the queue and its bindings.
+        Idempotent — returns 204 even if the queue does not exist.
+      operationId: deleteQueue
+      tags:
+        - Queue Provisioning
+      parameters:
+        - $ref: '#/components/parameters/QueueName'
+      responses:
+        '204':
+          description: Queue deleted (or did not exist)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
 components:
   securitySchemes:
     apiKey:
@@ -110,6 +159,15 @@ components:
       schema:
         type: string
         example: MY_PROXY_1
+
+    QueueName:
+      name: name
+      in: path
+      required: true
+      description: Queue name
+      schema:
+        type: string
+        example: core-0
 
   schemas:
     ProxyProvisioningRequest:
@@ -142,3 +200,30 @@ components:
           type: string
           description: Fully rendered shell command ready for execution
           example: helm install my-proxy oci://registry.example.com/charts/proxy --version 1.0.0 --namespace default --wait --atomic --set config.url=https://api.example.com
+
+    QueueRequest:
+      type: object
+      description: Request for provisioning a generic queue with a binding to an exchange
+      required:
+        - name
+        - exchange
+        - routingKey
+      properties:
+        name:
+          type: string
+          description: Queue name (RabbitMQ) or subscription name (ServiceBus)
+          example: core-0
+        exchange:
+          type: string
+          description: Exchange (RabbitMQ) or topic (ServiceBus) to bind under
+          example: czertainly-proxy
+        routingKey:
+          type: string
+          description: Binding routing key (RabbitMQ) or SQL filter pattern (ServiceBus)
+          example: proxymessage.*.core-0
+        properties:
+          type: object
+          additionalProperties: {}
+          description: Broker-specific queue arguments (e.g. x-expires, x-message-ttl, x-max-length)
+          example:
+            x-expires: 1800000

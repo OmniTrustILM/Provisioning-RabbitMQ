@@ -70,7 +70,7 @@
       "vhost": "czertainly",
       "configure": "",
       "write": "^czertainly\\..*$",
-      "read": "^core\\..*$"
+      "read": "^core(\\..+|-.+)?$"
     }
   ],
   "policies": [],

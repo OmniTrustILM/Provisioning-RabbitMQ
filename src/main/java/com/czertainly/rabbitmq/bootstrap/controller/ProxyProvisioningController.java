@@ -3,7 +3,7 @@ package com.czertainly.rabbitmq.bootstrap.controller;
 import com.czertainly.rabbitmq.bootstrap.api.ProxyProvisioningApi;
 import com.czertainly.rabbitmq.bootstrap.model.InstallationInstructions;
 import com.czertainly.rabbitmq.bootstrap.model.ProxyProvisioningRequest;
-import com.czertainly.rabbitmq.bootstrap.service.QueueProvisioningService;
+import com.czertainly.rabbitmq.bootstrap.service.ProxyProvisioningService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ProxyProvisioningController implements ProxyProvisioningApi {
 
-    private final QueueProvisioningService provisioningService;
+    private final ProxyProvisioningService provisioningService;
 
-    public ProxyProvisioningController(QueueProvisioningService provisioningService) {
+    public ProxyProvisioningController(ProxyProvisioningService provisioningService) {
         this.provisioningService = provisioningService;
     }
 

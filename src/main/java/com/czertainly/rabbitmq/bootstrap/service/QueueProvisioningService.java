@@ -1,12 +1,10 @@
 package com.czertainly.rabbitmq.bootstrap.service;
 
-import com.czertainly.rabbitmq.bootstrap.model.InstallationInstructions;
+import com.czertainly.rabbitmq.bootstrap.model.QueueRequest;
 
 public interface QueueProvisioningService {
 
-    void provisionQueue(String proxyCode);
+    void provisionQueue(QueueRequest request);
 
-    void decommissionQueue(String proxyCode);
-
-    InstallationInstructions getInstallationInstructions(String proxyCode, String format);
+    void deleteQueue(String name);
 }
