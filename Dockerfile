@@ -44,15 +44,15 @@ COPY --from=optimize /javaruntime $JAVA_HOME
 
 LABEL org.opencontainers.image.authors="ILM <support@otilm.com>"
 
-# add non root user cscapi
+# add non root user
 RUN apk upgrade --no-cache \
-    && addgroup --system --gid 10001 czertainly \
-    && adduser --system --home /opt/czertainly --uid 10001 --ingroup czertainly czertainly
+    && addgroup --system --gid 10001 provisioning-rabbitmq \
+    && adduser --system --home /opt/provisioning-rabbitmq --uid 10001 --ingroup provisioning-rabbitmq provisioning-rabbitmq
 
 COPY --from=build /home/app/docker /
-COPY --from=build /home/app/target/*.jar /opt/czertainly/app.jar
+COPY --from=build /home/app/target/*.jar /opt/provisioning-rabbitmq/app.jar
 
-WORKDIR /opt/czertainly
+WORKDIR /opt/provisioning-rabbitmq
 
 ENV PORT=8080
 
@@ -62,4 +62,4 @@ ENV NO_PROXY=
 
 USER 10001
 
-ENTRYPOINT ["/opt/czertainly/entry.sh"]
+ENTRYPOINT ["/opt/provisioning-rabbitmq/entry.sh"]

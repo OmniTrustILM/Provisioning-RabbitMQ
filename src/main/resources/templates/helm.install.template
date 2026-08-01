@@ -1,6 +1,5 @@
-# Add the Helm repository
-helm repo add czertainly https://cloudfieldcz.github.io/CZERTAINLY-Helm-Charts
-helm repo update
+# Log in to the chart registry
+helm registry login hub.omnitrustregistry.com
 
 # Install the chart
-helm install proxy czertainly/proxy --set token="{{token}}"
+helm install proxy oci://hub.omnitrustregistry.com/ilm-helm/proxy --set token="{{token}}"
