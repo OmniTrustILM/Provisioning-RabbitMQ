@@ -10,7 +10,7 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:provisioner}
     password: ${RABBITMQ_PASSWORD:provisioner}
-    virtual-host: ${RABBITMQ_VIRTUAL_HOST:czertainly}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
   docker:
     compose:
       enabled: false
@@ -26,7 +26,7 @@ app:
     amqp-url: ${PROXY_AMQP_URL:amqp://localhost:5672}
     username: ${PROXY_RABBITMQ_USERNAME:${spring.rabbitmq.username}}
     password: ${PROXY_RABBITMQ_PASSWORD:${spring.rabbitmq.password}}
-    exchange: ${PROXY_EXCHANGE:czertainly-proxy}
+    exchange: ${PROXY_EXCHANGE:ilm-proxy}
     response-queue: ${PROXY_RESPONSE_QUEUE:core}
     request-routing-key-prefix: coremessage.
     response-routing-key-prefix: proxymessage.
@@ -42,5 +42,5 @@ logging:
   pattern:
     correlation: "%X"
   level:
-    com.czertainly.rabbitmq.bootstrap: INFO
+    com.otilm.provisioning.rabbitmq: INFO
     org.springframework.amqp: INFO

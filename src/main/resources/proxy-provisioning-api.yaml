@@ -216,7 +216,7 @@ components:
         exchange:
           type: string
           description: Exchange (RabbitMQ) or topic (ServiceBus) to bind under
-          example: czertainly-proxy
+          example: ilm-proxy
         routingKey:
           type: string
           description: Binding routing key (RabbitMQ) or SQL filter pattern (ServiceBus)

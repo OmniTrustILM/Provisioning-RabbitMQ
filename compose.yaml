@@ -7,7 +7,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: provisioner
       RABBITMQ_DEFAULT_PASS: provisioner
-      RABBITMQ_DEFAULT_VHOST: czertainly
+      RABBITMQ_DEFAULT_VHOST: /
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions '/etc/rabbitmq/definitions.json'"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq

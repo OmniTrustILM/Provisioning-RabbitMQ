@@ -1,6 +1,8 @@
-# CZERTAINLY-rabbitmq-bootstrap
+# ILM Provisioning RabbitMQ
 
-The **rabbitmq-bootstrap** is a proxy provisioning service designed as part of the [CZERTAINLY](https://github.com/CZERTAINLY/CZERTAINLY) platform. Its primary purpose is to provision and decommission RabbitMQ queues and bindings for proxy instances, and to generate signed JWT configuration tokens with installation instructions for those proxies.
+> This repository is part of the open source project ILM. You can find more information about the project at the [ILM](https://github.com/OmniTrustILM/ilm) repository, including the contribution guide.
+
+**Provisioning RabbitMQ** is a proxy provisioning service designed as part of the ILM platform. Its primary purpose is to provision and decommission RabbitMQ queues and bindings for proxy instances, and to generate signed JWT configuration tokens with installation instructions for those proxies.
 
 ## Table of Contents
 
@@ -78,7 +80,7 @@ Returns installation instructions for an existing proxy. Generates a signed JWT 
 ```json
 {
   "command": {
-    "shell": "helm repo add czertainly https://cloudfieldcz.github.io/CZERTAINLY-Helm-Charts\nhelm repo update\n\nhelm install proxy czertainly/proxy --set token=\"<jwt-token>\""
+    "shell": "# Log in to the chart registry\nhelm registry login hub.omnitrustregistry.com\n\n# Install the chart\nhelm install proxy oci://hub.omnitrustregistry.com/ilm-helm/proxy --set token=\"<jwt-token>\""
   }
 }
 ```
@@ -101,7 +103,7 @@ Returns installation instructions for an existing proxy. Generates a signed JWT 
 
 *   **Java 21** or higher
 *   **Maven 3.8+**
-*   Running instance of **RabbitMQ** with AMQP access (port 5672) and a configured virtual host
+*   Running instance of **RabbitMQ** with AMQP access (port 5672), reachable on the virtual host given by `RABBITMQ_VIRTUAL_HOST`, and the `ilm-proxy` exchange declared on it
 
 ## Configuration
 
@@ -116,12 +118,12 @@ The application is configured via `application.yml` and environment variables.
 | `RABBITMQ_PORT`           | RabbitMQ AMQP port                                                                        | ![](https://img.shields.io/badge/-NO-red.svg)      | `5672`                      |
 | `RABBITMQ_USERNAME`       | RabbitMQ username with permission to manage queues and bindings in the virtual host       | ![](https://img.shields.io/badge/-YES-success.svg) | `provisioner`               |
 | `RABBITMQ_PASSWORD`       | RabbitMQ password                                                                         | ![](https://img.shields.io/badge/-YES-success.svg) | N/A                         |
-| `RABBITMQ_VIRTUAL_HOST`   | RabbitMQ virtual host                                                                     | ![](https://img.shields.io/badge/-NO-red.svg)      | `czertainly`                |
+| `RABBITMQ_VIRTUAL_HOST`   | RabbitMQ virtual host                                                                     | ![](https://img.shields.io/badge/-NO-red.svg)      | `/`                         |
 | `SECURITY_API_KEY`        | API key required in the `X-API-Key` header for all requests                               | ![](https://img.shields.io/badge/-YES-success.svg) | N/A                         |
 | `PROXY_AMQP_URL`          | External AMQP URL that provisioned proxies use to connect (may differ from internal host) | ![](https://img.shields.io/badge/-NO-red.svg)      | `amqp://localhost:5672`     |
 | `PROXY_RABBITMQ_USERNAME` | AMQP username embedded in the proxy configuration token                                   | ![](https://img.shields.io/badge/-NO-red.svg)      | same as `RABBITMQ_USERNAME` |
 | `PROXY_RABBITMQ_PASSWORD` | AMQP password embedded in the proxy configuration token                                   | ![](https://img.shields.io/badge/-NO-red.svg)      | same as `RABBITMQ_PASSWORD` |
-| `PROXY_EXCHANGE`          | Exchange name used for proxy communication                                                | ![](https://img.shields.io/badge/-NO-red.svg)      | `czertainly-proxy`          |
+| `PROXY_EXCHANGE`          | Exchange name used for proxy communication                                                | ![](https://img.shields.io/badge/-NO-red.svg)      | `ilm-proxy`                 |
 | `PROXY_RESPONSE_QUEUE`    | Core response queue name                                                                  | ![](https://img.shields.io/badge/-NO-red.svg)      | `core`                      |
 | `TOKEN_SIGNING_KEY`       | HMAC-SHA256 signing key for JWT configuration tokens (minimum 32 characters)              | ![](https://img.shields.io/badge/-YES-success.svg) | N/A                         |
 
@@ -141,7 +143,7 @@ export SECURITY_API_KEY=my-secret-api-key
 export TOKEN_SIGNING_KEY=my-signing-key-at-least-32-characters-long
 
 # Run the application
-java -jar target/rabbitBootstrap-1.0-SNAPSHOT.jar
+java -jar target/provisioning-rabbitmq-1.0.0.jar
 ```
 
 The application will start on port 8080 (configurable via `PORT` environment variable).
@@ -166,7 +168,7 @@ Example response:
 ```json
 {
   "command": {
-    "shell": "# Add the Helm repository\nhelm repo add czertainly https://cloudfieldcz.github.io/CZERTAINLY-Helm-Charts\nhelm repo update\n\n# Install the chart\nhelm install proxy czertainly/proxy --set token=\"<jwt-token>\""
+    "shell": "# Log in to the chart registry\nhelm registry login hub.omnitrustregistry.com\n\n# Install the chart\nhelm install proxy oci://hub.omnitrustregistry.com/ilm-helm/proxy --set token=\"<jwt-token>\""
   }
 }
 ```
@@ -179,52 +181,50 @@ curl -X DELETE "http://localhost:8080/api/v1/proxies/MY_PROXY_1" \
 
 ## Docker
 
-### Build Docker image
+The service is published as a container image. Use `docker pull hub.omnitrustregistry.com/ilm/provisioning-rabbitmq:tagname` to pull the required image from the registry.
+
+### Build the image locally
 ```bash
-docker build -t czertainly/rabbitmq-bootstrap:latest .
+docker build -t ilm/provisioning-rabbitmq:latest .
 ```
 
-### Run with Docker
+### Run the container
+
+The service expects an external RabbitMQ instance:
+
 ```bash
 docker run -d \
-  --name rabbitmq-bootstrap \
+  --name provisioning-rabbitmq \
   -p 8080:8080 \
   -e RABBITMQ_HOST=rabbitmq \
   -e RABBITMQ_USERNAME=provisioner \
   -e RABBITMQ_PASSWORD=provisioner \
-  -e RABBITMQ_VIRTUAL_HOST=czertainly \
   -e SECURITY_API_KEY=my-secret-api-key \
   -e PROXY_AMQP_URL=amqp://rabbitmq:5672 \
   -e TOKEN_SIGNING_KEY=my-signing-key-at-least-32-characters-long \
-  czertainly/rabbitmq-bootstrap:latest
+  ilm/provisioning-rabbitmq:latest
 ```
 
-### Docker Compose
+### Local RabbitMQ for development
 
-The service expects an external RabbitMQ instance. Create a `.env` file with your connection details:
+`compose.yaml` provides a RabbitMQ instance preloaded with the ILM topology from `rabbitmq/definitions.json` — the `ilm` and `ilm-proxy` exchanges, the `core.*` queues, and the `admin`, `provisioner`, `proxy` and `core` users. It runs the broker only; the service itself is started from your IDE or with `mvn spring-boot:run`.
+
+Start it explicitly:
 
 ```bash
-RABBITMQ_HOST=your-rabbitmq-host
-RABBITMQ_USERNAME=provisioner
-RABBITMQ_PASSWORD=provisioner
-RABBITMQ_VIRTUAL_HOST=czertainly
-SECURITY_API_KEY=my-secret-api-key
-PROXY_AMQP_URL=amqp://your-rabbitmq-host:5672
-TOKEN_SIGNING_KEY=my-signing-key-at-least-32-characters-long
+docker compose up -d
 ```
 
-Then run with Docker Compose:
+Or let Spring Boot manage its lifecycle by activating the `dev` profile, which enables Docker Compose support:
 
 ```bash
-docker-compose up -d
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Check logs:
-```bash
-docker-compose logs -f rabbitmq-bootstrap
-```
+## Contributing
 
-Stop the service:
-```bash
-docker-compose down
-```
+Please read the [contribution guide](https://github.com/OmniTrustILM/ilm) before opening a pull request. Report bugs and request features through the repository issues.
+
+## License
+
+Released under the MIT License. See [LICENSE.md](LICENSE.md) for details.

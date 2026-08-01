@@ -33,7 +33,7 @@
   ],
   "vhosts": [
     {
-      "name": "czertainly",
+      "name": "/",
       "description": "",
       "metadata": {
         "description": "",
@@ -46,38 +46,38 @@
   "permissions": [
     {
       "user": "admin",
-      "vhost": "czertainly",
+      "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
     },
     {
       "user": "provisioner",
-      "vhost": "czertainly",
+      "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
     },
     {
       "user": "proxy",
-      "vhost": "czertainly",
+      "vhost": "/",
       "configure": "",
-      "write": "^czertainly-proxy$",
+      "write": "^ilm-proxy$",
       "read": "^proxy\\..*$"
     },
     {
       "user": "core",
-      "vhost": "czertainly",
+      "vhost": "/",
       "configure": "",
-      "write": "^czertainly\\..*$",
+      "write": "^ilm(-proxy)?$",
       "read": "^core(\\..+|-.+)?$"
     }
   ],
   "policies": [],
   "exchanges": [
     {
-      "name": "czertainly",
-      "vhost": "czertainly",
+      "name": "ilm",
+      "vhost": "/",
       "type": "direct",
       "durable": true,
       "auto_delete": false,
@@ -85,8 +85,8 @@
       "arguments": {}
     },
     {
-      "name": "czertainly-proxy",
-      "vhost": "czertainly",
+      "name": "ilm-proxy",
+      "vhost": "/",
       "type": "topic",
       "durable": true,
       "auto_delete": false,
@@ -97,49 +97,49 @@
   "queues": [
     {
       "name": "core.audit-logs",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "core.notifications",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "core.scheduler",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "core.actions",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "core.validation",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "core.events",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "core",
-      "vhost": "czertainly",
+      "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
@@ -147,48 +147,48 @@
   ],
   "bindings": [
     {
-      "source": "czertainly",
-      "vhost": "czertainly",
+      "source": "ilm",
+      "vhost": "/",
       "destination": "core.audit-logs",
       "destination_type": "queue",
       "routing_key": "audit-logs",
       "arguments": {}
     },
     {
-      "source": "czertainly",
-      "vhost": "czertainly",
+      "source": "ilm",
+      "vhost": "/",
       "destination": "core.notifications",
       "destination_type": "queue",
       "routing_key": "notification",
       "arguments": {}
     },
     {
-      "source": "czertainly",
-      "vhost": "czertainly",
+      "source": "ilm",
+      "vhost": "/",
       "destination": "core.actions",
       "destination_type": "queue",
       "routing_key": "action",
       "arguments": {}
     },
     {
-      "source": "czertainly",
-      "vhost": "czertainly",
+      "source": "ilm",
+      "vhost": "/",
       "destination": "core.scheduler",
       "destination_type": "queue",
       "routing_key": "scheduler",
       "arguments": {}
     },
     {
-      "source": "czertainly",
-      "vhost": "czertainly",
+      "source": "ilm",
+      "vhost": "/",
       "destination": "core.validation",
       "destination_type": "queue",
       "routing_key": "validation",
       "arguments": {}
     },
     {
-      "source": "czertainly",
-      "vhost": "czertainly",
+      "source": "ilm",
+      "vhost": "/",
       "destination": "core.events",
       "destination_type": "queue",
       "routing_key": "event",

@@ -27,14 +27,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Workflow inputs are supplied by whoever dispatches this run, so they are read
+      # through the environment rather than interpolated into the shell.
       - name: Export context
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          HEAD_SHA: ${{ inputs.head_sha }}
+          HEAD_REPO: ${{ inputs.head_repo }}
+          PR_BRANCH: ${{ inputs.head_branch }}
+          BASE_BRANCH: ${{ inputs.base_ref }}
+          UPSTREAM_RUN_ID: ${{ inputs.run_id }}
         run: |
-          echo "PR_NUMBER=${{ inputs.pr_number }}"    >> $GITHUB_ENV
-          echo "HEAD_SHA=${{ inputs.head_sha }}"      >> $GITHUB_ENV
-          echo "HEAD_REPO=${{ inputs.head_repo }}"    >> $GITHUB_ENV
-          echo "PR_BRANCH=${{ inputs.head_branch }}"  >> $GITHUB_ENV
-          echo "BASE_BRANCH=${{ inputs.base_ref }}"   >> $GITHUB_ENV
-          echo "UPSTREAM_RUN_ID=${{ inputs.run_id }}" >> $GITHUB_ENV
+          {
+            echo "PR_NUMBER=$PR_NUMBER"
+            echo "HEAD_SHA=$HEAD_SHA"
+            echo "HEAD_REPO=$HEAD_REPO"
+            echo "PR_BRANCH=$PR_BRANCH"
+            echo "BASE_BRANCH=$BASE_BRANCH"
+            echo "UPSTREAM_RUN_ID=$UPSTREAM_RUN_ID"
+          } >> "$GITHUB_ENV"
 
       - name: Generate token
         id: app_token
@@ -66,9 +77,11 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch base branch
+        env:
+          UPSTREAM_CLONE_URL: ${{ github.event.repository.clone_url }}
         run: |
-          git remote add upstream ${{ github.event.repository.clone_url }}
-          git fetch upstream $BASE_BRANCH
+          git remote add upstream "$UPSTREAM_CLONE_URL"
+          git fetch upstream "$BASE_BRANCH"
           git checkout -B "$BASE_BRANCH" "upstream/$BASE_BRANCH"
           git checkout "$PR_BRANCH"
           git clean -ffdx && git reset --hard HEAD
@@ -95,10 +108,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.scm.revision=${{ env.HEAD_SHA }} \
-            -Dsonar.pullrequest.key=${{ env.PR_NUMBER }} \
-            -Dsonar.pullrequest.branch=${{ env.PR_BRANCH }} \
-            -Dsonar.pullrequest.base=${{ env.BASE_BRANCH }}
+            -Dsonar.scm.revision="$HEAD_SHA" \
+            -Dsonar.pullrequest.key="$PR_NUMBER" \
+            -Dsonar.pullrequest.branch="$PR_BRANCH" \
+            -Dsonar.pullrequest.base="$BASE_BRANCH"
 
       - name: Finalize GitHub Check
         if: always()

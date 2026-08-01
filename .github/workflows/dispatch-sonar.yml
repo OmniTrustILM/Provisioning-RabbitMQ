@@ -26,28 +26,39 @@ jobs:
         id: ctx
         run: |
           cat pr_context/pr-context.json
-          echo "pr_number=$(jq -r '.pr_number' pr_context/pr-context.json)" >> $GITHUB_OUTPUT
-          echo "head_sha=$(jq -r '.head_sha' pr_context/pr-context.json)" >> $GITHUB_OUTPUT
-          echo "head_repo=$(jq -r '.head_repo' pr_context/pr-context.json)" >> $GITHUB_OUTPUT
-          echo "head_branch=$(jq -r '.head_branch' pr_context/pr-context.json)" >> $GITHUB_OUTPUT
-          echo "base_ref=$(jq -r '.base_ref' pr_context/pr-context.json)" >> $GITHUB_OUTPUT
-          echo "run_id=$(jq -r '.run_id' pr_context/pr-context.json)" >> $GITHUB_OUTPUT
+          {
+            echo "pr_number=$(jq -r '.pr_number' pr_context/pr-context.json)"
+            echo "head_sha=$(jq -r '.head_sha' pr_context/pr-context.json)"
+            echo "head_repo=$(jq -r '.head_repo' pr_context/pr-context.json)"
+            echo "head_branch=$(jq -r '.head_branch' pr_context/pr-context.json)"
+            echo "base_ref=$(jq -r '.base_ref' pr_context/pr-context.json)"
+            echo "run_id=$(jq -r '.run_id' pr_context/pr-context.json)"
+          } >> "$GITHUB_OUTPUT"
 
+      # The context originates from the pull request, so it reaches the script through
+      # the environment instead of being interpolated into the JavaScript source.
       - name: Dispatch Sonar workflow with inputs
         uses: actions/github-script@v8
+        env:
+          PR_NUMBER: ${{ steps.ctx.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.ctx.outputs.head_sha }}
+          HEAD_REPO: ${{ steps.ctx.outputs.head_repo }}
+          HEAD_BRANCH: ${{ steps.ctx.outputs.head_branch }}
+          BASE_REF: ${{ steps.ctx.outputs.base_ref }}
+          UPSTREAM_RUN_ID: ${{ steps.ctx.outputs.run_id }}
         with:
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'sonar.yml',
-              ref: '${{ steps.ctx.outputs.base_ref }}',
+              ref: process.env.BASE_REF,
               inputs: {
-                pr_number:  '${{ steps.ctx.outputs.pr_number }}',
-                head_sha:   '${{ steps.ctx.outputs.head_sha }}',
-                head_repo:  '${{ steps.ctx.outputs.head_repo }}',
-                head_branch:'${{ steps.ctx.outputs.head_branch }}',
-                base_ref:   '${{ steps.ctx.outputs.base_ref }}',
-                run_id:     '${{ steps.ctx.outputs.run_id }}'
+                pr_number:   process.env.PR_NUMBER,
+                head_sha:    process.env.HEAD_SHA,
+                head_repo:   process.env.HEAD_REPO,
+                head_branch: process.env.HEAD_BRANCH,
+                base_ref:    process.env.BASE_REF,
+                run_id:      process.env.UPSTREAM_RUN_ID
               }
             });
