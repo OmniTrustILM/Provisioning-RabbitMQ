@@ -227,4 +227,4 @@ Please read the [contribution guide](https://github.com/OmniTrustILM/ilm) before
 
 ## License
 
-Released under the MIT License. See [LICENSE.md](LICENSE.md) for details.
+Released under the Apache License 2.0. See [LICENSE.md](LICENSE.md) for details.
