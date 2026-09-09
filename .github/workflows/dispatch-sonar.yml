@@ -38,7 +38,7 @@ jobs:
       # The context originates from the pull request, so it reaches the script through
       # the environment instead of being interpolated into the JavaScript source.
       - name: Dispatch Sonar workflow with inputs
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           PR_NUMBER: ${{ steps.ctx.outputs.pr_number }}
           HEAD_SHA: ${{ steps.ctx.outputs.head_sha }}
