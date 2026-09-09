@@ -26,7 +26,7 @@
         <!-- Application only hands control to Spring Boot and carries no logic of its own. -->
         <sonar.coverage.exclusions>**/generated-sources/**,**/Application.java</sonar.coverage.exclusions>
         <sonar.cpd.exclusions>**/generated-sources/**</sonar.cpd.exclusions>
-        <openapi-generator.version>7.21.0</openapi-generator.version>
+        <openapi-generator.version>7.25.0</openapi-generator.version>
         <jsonwebtoken.version>0.13.0</jsonwebtoken.version>
     </properties>
 
